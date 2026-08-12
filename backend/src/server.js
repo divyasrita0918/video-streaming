@@ -1,21 +1,25 @@
+import "dotenv/config";
 import app from "./app.js";
+import { prisma } from "./config/prisma.js";
+import { initializeStorage } from "./services/storage.service.js";
 
-import { pool } from "./config/db.js";
+const PORT = process.env.PORT || 5000;
 
-app.get("/health/db", async (req, res) => {
+async function startServer() {
     try {
-        const result = await pool.query("SELECT NOW()");
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            message: "Database connection failed",
+        await prisma.$connect();
+        console.log("Database connected");
+
+        await initializeStorage();
+        console.log("Storage initialized");
+
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
         });
+    } catch (error) {
+        console.error("Failed to start server:", error);
+        process.exit(1);
     }
-});
+}
 
-const PORT = 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+startServer();
