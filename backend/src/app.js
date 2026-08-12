@@ -1,13 +1,10 @@
 import express from "express";
+import videoRoutes from "./routes/video.routes.js";
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.json({
-        message: "Adaptive Video Streaming Backend"
-    });
-});
+app.use("/videos", videoRoutes);
 
 export default app;

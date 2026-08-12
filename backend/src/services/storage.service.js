@@ -32,3 +32,7 @@ export async function uploadVideo(filePath, originalName) {
 
   return objectKey;
 }
+
+export async function deleteObject(objectKey) {
+  await minioClient.removeObject(bucketName, objectKey);
+}
