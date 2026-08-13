@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "./workers/video.worker.js"
 import app from "./app.js";
 import { prisma } from "./config/prisma.js";
 import { initializeStorage } from "./services/storage.service.js";
