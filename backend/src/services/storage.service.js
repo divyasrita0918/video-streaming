@@ -44,3 +44,20 @@ export async function downloadObject(objectKey, destinationPath) {
     destinationPath
   );
 }
+
+export async function uploadObject(
+  filePath,
+  objectKey,
+  contentType
+) {
+  await minioClient.fPutObject(
+    bucketName,
+    objectKey,
+    filePath,
+    {
+      "Content-Type": contentType,
+    }
+  );
+
+  return objectKey;
+}

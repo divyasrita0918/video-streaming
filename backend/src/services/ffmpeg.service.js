@@ -50,3 +50,104 @@ export function probeVideo(filePath) {
     });
   });
 }
+
+export function generateThumbnail(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      inputPath,
+
+      "-ss",
+      "00:00:05",
+
+      "-frames:v",
+      "1",
+
+      "-q:v",
+      "2",
+
+      "-y",
+
+      outputPath,
+    ]);
+
+    let stderr = "";
+
+    ffmpeg.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    ffmpeg.on("error", (error) => {
+      reject(error);
+    });
+
+    ffmpeg.on("close", (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(`Thumbnail generation failed: ${stderr}`)
+        );
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+export function transcodeVideo(
+  inputPath,
+  outputPath,
+  width,
+  height
+) {
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      inputPath,
+
+      "-vf",
+      `scale=${width}:${height}`,
+
+      "-c:v",
+      "libx264",
+
+      "-preset",
+      "medium",
+
+      "-crf",
+      "23",
+
+      "-c:a",
+      "aac",
+
+      "-b:a",
+      "128k",
+
+      "-y",
+      outputPath,
+    ]);
+
+    let stderr = "";
+
+    ffmpeg.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    ffmpeg.on("error", (error) => {
+      reject(error);
+    });
+
+    ffmpeg.on("close", (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(
+            `FFmpeg transcoding failed: ${stderr}`
+          )
+        );
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
