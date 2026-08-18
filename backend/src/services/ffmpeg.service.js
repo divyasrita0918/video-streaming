@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import path from "path";
 
 export function probeVideo(filePath) {
   return new Promise((resolve, reject) => {
@@ -148,6 +149,71 @@ export function transcodeVideo(
       }
 
       resolve();
+    });
+  });
+}
+
+export function generateHLS(
+  inputPath,
+  outputDirectory
+) {
+  return new Promise((resolve, reject) => {
+    const playlistPath = path.join(
+      outputDirectory,
+      "playlist.m3u8"
+    );
+
+    const segmentPattern = path.join(
+      outputDirectory,
+      "segment%03d.ts"
+    );
+
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      inputPath,
+
+      "-c:v",
+      "copy",
+      "-c:a",
+      "copy",
+
+      "-start_number",
+      "0",
+
+      "-hls_time",
+      "6",
+
+      "-hls_playlist_type",
+      "vod",
+
+      "-hls_segment_filename",
+      segmentPattern,
+
+      "-y",
+      playlistPath,
+    ]);
+
+    let stderr = "";
+
+    ffmpeg.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    ffmpeg.on("error", (error) => {
+      reject(error);
+    });
+
+    ffmpeg.on("close", (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(
+            `HLS generation failed: ${stderr}`
+          )
+        );
+        return;
+      }
+
+      resolve(playlistPath);
     });
   });
 }

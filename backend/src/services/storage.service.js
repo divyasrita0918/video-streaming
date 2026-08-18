@@ -61,3 +61,10 @@ export async function uploadObject(
 
   return objectKey;
 }
+
+export function getObjectStream(objectKey) {
+  return minioClient.getObject(
+    process.env.MINIO_BUCKET,
+    objectKey
+  );
+}
